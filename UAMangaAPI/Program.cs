@@ -23,7 +23,9 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddTransient<SecurityService>();
 builder.Services.AddHostedService<ParseService>();
+
 builder.Services.AddDbContext<UAMangaAPIDbContext>(options => options.UseInMemoryDatabase("MangaDb"), ServiceLifetime.Scoped);
 
 var app = builder.Build();
