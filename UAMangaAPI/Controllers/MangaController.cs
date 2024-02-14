@@ -32,5 +32,11 @@ namespace UAMangaAPI.Controllers
         [HttpGet("NashaIdea")]
         public IEnumerable<Manga> GetNashaIdea() => dbContext.Mangas.Where(x => x.Publisher == "NashaIdea");
 
+        [HttpGet("Molfar")]
+        public IEnumerable<Manga> GetMolfar() => dbContext.Mangas.Where(x => x.Publisher == "Molfar");
+
+        [HttpGet("Safran")]
+        public IEnumerable<Manga> GetSafran() => dbContext.Mangas.Where(x => x.Publisher == "Safran");
+
     }
 }
