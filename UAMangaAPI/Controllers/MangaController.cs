@@ -23,20 +23,24 @@ namespace UAMangaAPI.Controllers
         }
 
 
-        [HttpGet("All")]
+        [HttpGet]
         public IEnumerable<Manga> GetAll() => dbContext.Mangas;
 
-        [HttpGet("Malyopus")]
-        public IEnumerable<Manga> GetMalyopus() => dbContext.Mangas.Where(x => x.Publisher == "Malyopus");
+        [HttpGet("{publisher}")]
+        public IEnumerable<Manga> GetByPublisher(string publisher) => dbContext.Mangas.Where(x => x.Publisher == publisher);
 
-        [HttpGet("NashaIdea")]
-        public IEnumerable<Manga> GetNashaIdea() => dbContext.Mangas.Where(x => x.Publisher == "NashaIdea");
+        [HttpGet("Search/{name}")]
+        public IEnumerable<Manga> GetByName(string name, string? publisher = null)
+        {
+            IQueryable<Manga> query = dbContext.Mangas.Where(x => x.Name.Contains(name));
 
-        [HttpGet("Molfar")]
-        public IEnumerable<Manga> GetMolfar() => dbContext.Mangas.Where(x => x.Publisher == "Molfar");
+            if (!string.IsNullOrEmpty(publisher))
+            {
+                query = query.Where(x => x.Publisher == publisher);
+            }
 
-        [HttpGet("Safran")]
-        public IEnumerable<Manga> GetSafran() => dbContext.Mangas.Where(x => x.Publisher == "Safran");
+            return query.ToList();
+        }
 
     }
 }

@@ -14,6 +14,8 @@ namespace UAMangaAPI.Services
         private readonly IServiceProvider _services;
         private readonly IServiceScopeFactory _scopeFactory;
 
+        private static HtmlWeb web = new HtmlWeb();
+
         public ParseService(IServiceProvider services, IServiceScopeFactory scopeFactory)
         {
             _services = services;
@@ -35,7 +37,7 @@ namespace UAMangaAPI.Services
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<UAMangaAPIDbContext>();
                 var dbValues = dbContext.Mangas;
-                var parseRes = GetMalyopus().Concat(GetNashaIdea()).Concat(GetMolfar()).Concat(GetSafran());
+                var parseRes = GetMalyopus().Concat(GetNashaIdea()).Concat(GetMolfar()).Concat(GetSafran()).Concat(GetLantsuta());
                 foreach (var manga in parseRes)
                 {
                     if (!dbValues.Select(x => x.Name).Contains(manga.Name))
@@ -101,11 +103,25 @@ namespace UAMangaAPI.Services
         }
 
         public IEnumerable<Manga> GetSafran() => ParseSafranPage($"https://safranbook.com/catalog/genre/comics/").ToList();
+
+        public IEnumerable<Manga> GetLantsuta()
+        {
+
+            List<Manga> resultMangas = new List<Manga>();
+            int i = 1;
+            List<Manga> pageContent = ParseLantsutaPage($"https://lantsuta-publishing.com/manga?page={i}").ToList();
+            while (pageContent.Count > 0)
+            {
+                resultMangas.AddRange(pageContent);
+                i++;
+                pageContent = ParseLantsutaPage($"https://lantsuta-publishing.com/manga?page={i}").ToList();
+            }
+            return resultMangas;
+        }
         
 
         public static IEnumerable<Manga> ParseIdeaPage(string pageUrl)
         {
-            HtmlWeb web = new HtmlWeb();
             HtmlDocument document = web.Load(pageUrl);
 
             List<Manga> pageProducts = new List<Manga>();
@@ -132,7 +148,6 @@ namespace UAMangaAPI.Services
         }
         public static IEnumerable<Manga> ParseMalyopusPage(string pageUrl)
         {
-            HtmlWeb web = new HtmlWeb();
             HtmlDocument document = web.Load(pageUrl);
 
             List<Manga> pageProducts = new List<Manga>();
@@ -161,7 +176,6 @@ namespace UAMangaAPI.Services
         }
         public IEnumerable<Manga> ParseMolfarPage(string pageUrl)
         {
-            HtmlWeb web = new HtmlWeb();
             HtmlDocument document = web.Load(pageUrl);
 
             List<Manga> pageProducts = new List<Manga>();
@@ -192,7 +206,6 @@ namespace UAMangaAPI.Services
         }
         public IEnumerable<Manga> ParseSafranPage(string pageUrl)
         {
-            HtmlWeb web = new HtmlWeb();
             HtmlDocument document = web.Load(pageUrl);
 
             List<Manga> pageProducts = new List<Manga>();
@@ -222,7 +235,32 @@ namespace UAMangaAPI.Services
 
             return pageProducts;
         }
+        public IEnumerable<Manga> ParseLantsutaPage(string pageUrl)
+        {
+            HtmlDocument document = web.Load(pageUrl);
 
+            List<Manga> pageProducts = new List<Manga>();
+
+            var productHTMLElements = document.DocumentNode.SelectNodes("//div[@class='product-layout product-grid col-xs-12 col-md-4']");
+
+            if(productHTMLElements == null)
+                return pageProducts;
+
+            foreach (var productHTMLElement in productHTMLElements)
+            {
+                var name = HtmlEntity.DeEntitize(productHTMLElement.SelectSingleNode(".//h3[@class='name-product']/a").InnerText);
+                var coverUrl = HtmlEntity.DeEntitize(productHTMLElement.SelectSingleNode(".//div[@class='image']/a/img").Attributes["src"].Value);
+                var price = HtmlEntity.DeEntitize(productHTMLElement.SelectSingleNode(".//p[@class='price']").InnerText);
+                var link = HtmlEntity.DeEntitize(productHTMLElement.SelectSingleNode(".//div[@class='button-box']/a[@class='btn-more']").Attributes["href"].Value);
+
+                var manga = new Manga(name, coverUrl, price, "Lantsuta", link);
+
+                if(!manga.Name.Contains("Комплект"))
+                    pageProducts.Add(manga);
+            }
+
+            return pageProducts;
+        }
 
 
 
