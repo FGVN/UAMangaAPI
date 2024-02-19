@@ -37,7 +37,12 @@ namespace UAMangaAPI.Services
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<UAMangaAPIDbContext>();
                 var dbValues = dbContext.Mangas;
-                var parseRes = GetMalyopus().Concat(GetNashaIdea()).Concat(GetMolfar()).Concat(GetSafran()).Concat(GetLantsuta());
+                var parseRes = GetMalyopus().
+                        Concat(GetNashaIdea()).
+                        Concat(GetMolfar()).
+                        Concat(GetSafran()).
+                        Concat(GetLantsuta()).
+                    OrderBy(manga => manga.Name);
                 foreach (var manga in parseRes)
                 {
                     if (!dbValues.Select(x => x.Name).Contains(manga.Name))
@@ -77,12 +82,12 @@ namespace UAMangaAPI.Services
         {
             List<Manga> resultMangas = new List<Manga>();
             int i = 1;
-            List<Manga> pageContent = ParseIdeaPage($"https://nashaidea.com/page/{1}").ToList();
+            List<Manga> pageContent = ParseIdeaPage($"https://nashaidea.com/product-category/manga/page/{1}").ToList();
             while (pageContent.Count > 0)
             {
                 resultMangas.AddRange(pageContent);
                 i++;
-                pageContent = ParseIdeaPage($"https://nashaidea.com/page/{i}").ToList();
+                pageContent = ParseIdeaPage($"https://nashaidea.com/product-category/manga/page/{i}").ToList();
             }
             return resultMangas;
         }

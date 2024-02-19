@@ -32,7 +32,7 @@ namespace UAMangaAPI.Controllers
         [HttpGet("Search/{name}")]
         public IEnumerable<Manga> GetByName(string name, string? publisher = null)
         {
-            IQueryable<Manga> query = dbContext.Mangas.Where(x => x.Name.Contains(name));
+            IQueryable<Manga> query = dbContext.Mangas.Where(x => x.Name.ToLower().Contains(name.ToLower()));
 
             if (!string.IsNullOrEmpty(publisher))
             {
